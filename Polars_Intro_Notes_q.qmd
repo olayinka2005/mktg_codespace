@@ -1,0 +1,223 @@
+
+---
+title: "Lecture Notes: Data Manipulation with Polars"
+subtitle: "MKTG - LEE"
+execute: 
+  echo: true
+  eval: true
+format:
+  html:
+    code-fold: false
+    embed-resources: true
+jupyter: python3
+---
+
+# ! Many code snippets in this file are incomplete. Complete them!
+
+# Introduction to Polars
+
+Polars is a powerful DataFrame library for Python that is designed to handle large datasets efficiently. We will walk through the basic functionalities of Polars.
+
+
+## Importing Polars
+
+Start by importing the Polars library in your Python script:
+
+```{python}
+import polars as pl
+```
+
+Once you import the Polars library, you are able to use code/functions that are defined in the Polars library for your own analysis without having to write your own code from scratch.
+
+## Loading Data
+
+Polars provides a simple way to load data into a DataFrame. Let's create a DataFrame with product sales data for demonstration.
+
+```{python}
+data = {
+    "ProductID": [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],
+    "Category": [
+        "Electronics", "Furniture", "Electronics", "Furniture", "Clothing",
+        "Clothing", "Furniture", "Electronics", "Electronics", "Clothing"
+    ],
+    "Price": [299.99, 89.99, 199.99, 150.00, 45.00, 60.00, 110.00, 220.00, 250.00, 30.00],
+    "QuantitySold": [15, 4, 8, 12, 25, 10, 6, 20, 5, 50]
+}
+
+# Create a Polars DataFrame
+sales_df = pl.DataFrame(data)
+
+# Display the DataFrame
+print("Initial Sales Data:")
+sales_df
+```
+
+
+## Quick Detour: Class and Object
+
+1. What is a Class?
+A class is like a blueprint. Polars' DataFrame class is a blueprint for a DataFrame. It defines what a DataFrame can contain (columns) and what it can do (methods). In Polars, the class DataFrame allows us to create and manipulate table-like data (e.g., think of them being like spreadsheets.)
+
+2. Creating an Object
+When we use Polars to create a DataFrame, we’re creating an object of the DataFrame class. This object is a specific instance that holds data and can use various built-in methods to work with that data.
+
+Here’s an example of creating a DataFrame (object) using the DataFrame class in Polars:
+
+```{python}
+
+# Creating a DataFrame object
+df = pl.DataFrame({
+    "name": ["Alice", "Bob", "Charlie"],
+    "age": [25, 30, 35]
+})
+```
+
+In this code:
+
+We use the `pl.DataFrame` class to create a DataFrame object called `df`.
+The df object now contains data (the names and ages) and knows how to perform certain actions, like showing the first few rows.
+
+3. Using Methods on the DataFrame Object
+A **method** is like a function that is built into the class and can be used by the object. Since df is a DataFrame object, it has access to many methods, such as .head():
+
+```{python}
+
+# Using the head method to see the first few rows of the DataFrame
+df.head()
+```
+
+Here’s what's happening:
+
+- df.head() calls the head method, which is like a small "built-in function" of the DataFrame class. This method tells the df object to display its first few rows.
+
+- The head() method is designed in the DataFrame class so that all DataFrame objects (like df) can use it to interact with the data.
+
+### How This Relates to Running a Function
+Methods like head() are similar to functions but are specifically tied to an object (df in this case). When you run df.head(), it's like asking the DataFrame object to "run its built-in function" to display the first few rows.
+This is possible because df is an instance of the DataFrame class, which comes with predefined actions (methods) like head().
+By understanding classes and objects, you see that calling df.head() works because df is an object of the DataFrame class, and the class provides various methods (functions) that let us interact with the data.
+
+
+
+## Basic Data Inspection
+
+Use these commands to inspect the data structure and the first few rows of your DataFrame:
+
+```{python}
+# Basic Data Inspection
+
+# View the first few rows of the DataFrame
+sales_df.head()
+```
+
+
+### Explanation
+
+- **`head()`**: This function retrieves the first few rows of the DataFrame to give a quick overview of the data.
+
+## Basic Filtering
+
+To filter data based on simple conditions:
+
+```{python}
+# Basic Filtering
+
+# Filter to get products with a price greater than $100
+filtered_df = sales_df.filter(pl.col("Price") > 100) # !! finish this code
+
+print("Filtered Data (Price > 100):")
+filtered_df
+```
+
+## Complex Filtering
+
+For more complex conditions, you can combine multiple criteria:
+
+```{python}
+# Complex Filtering
+
+# Filter to get electronics products with a price greater than $200
+complex_filtered_df = sales_df.filter(
+  (pl.col("Category")=="Electronics") &
+  (pl.col("Price") > 200))
+
+print("Complex Filtered Data (Electronics with Price > 200):")
+complex_filtered_df
+```
+
+### Explanation
+
+- **`filter()`**: This method is used to filter the DataFrame based on specific conditions. You can use `pl.col("column_name")` to reference columns and apply logical operators (`>`, `<`, `==`, `&`, `|`) to build your conditions.
+- Note that in polars, we use & for 'and', | for 'or'.
+
+
+
+
+## Adding New Columns
+
+To add new columns to a DataFrame, we can again use `with_columns`. We'll add a `TotalRevenue` column calculated as `Price * QuantitySold`. Note that the alias function defines the new column name.
+
+```{python}
+# Add a new column 'TotalRevenue' calculated as Price * QuantitySold
+sales_df = sales_df.with_columns(
+  (pl.col ("Price")*pl.col("QuantitySold"))
+.alias("TotalRevenue")  
+)
+
+print("Sales Data with Total Revenue:")
+sales_df
+```
+
+
+
+## Modifying Existing Columns
+
+You can modify existing columns in Polars using the `with_columns` method. Here, we'll apply a 10% discount to the `Price` column.
+
+```{python}
+# Modify the 'Price' column to apply a 10% discount
+sales_df = sales_df.with_columns((pl.col("Price")*.9)
+.alias("Price"))
+# !! finish this code
+
+
+print("Sales Data with Discounted Prices:")
+sales_df
+```
+
+
+## Grouping and Aggregating Data
+
+You can group data and perform aggregations using `group_by` and `agg`.
+
+```{python}
+# Group by 'Category' and calculate the total and average revenue
+category_summary = sales_df2.group_by("Category").agg(
+  [
+    pl.col("TotalRevenue").sum().alias("SumTotalRevenue"),
+    pl.col("TotalRvenue").mean().alias("AverageRevenue")
+    ]
+  
+ # !! finish this code
+
+print("Category Summary:")
+category_summary
+```
+
+
+# Summary
+
+In this lecture, we covered key data manipulation techniques using Polars, including:
+
+1. **Loading Data**: Creating and initializing DataFrames.
+
+2. **Basic Data Inspection**: Viewing data and checking data types to understand the dataset structure.
+
+3. **Filtering Data**: Extracting subsets of data using both simple and complex conditions.
+
+4. **Modifying and Adding Columns**: Transforming existing data and creating new calculated columns.
+
+5. **Grouping and Aggregating**: Summarizing data using group-based calculations/aggregations.
+
+
+These techniques are foundational for data analysis and processing with Polars.
